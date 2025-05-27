@@ -1,0 +1,32 @@
+Prompt:
+"Generate PLC Structured Text code for a water tank system. Start pump when tank level is below 30% and stop when above 80%, but only operate from 10 PM to 6 AM. Stop pump and trigger overflow alarm if tank exceeds 95%. Raise low flow alarm if flow is less than 10 L/min for over 5 minutes. Include a maintenance mode to disable all pump activity."
+
+Expected Output:
+IF NOT MaintenanceMode THEN
+    IF (CurrentHour >= 22) OR (CurrentHour < 6) THEN
+        IF TankLevel < 30 THEN
+            Pump := TRUE;
+        ELSIF TankLevel > 80 THEN
+            Pump := FALSE;
+        END_IF;
+    ELSE
+        Pump := FALSE;
+    END_IF;
+ELSE
+    Pump := FALSE;
+END_IF;
+
+IF TankLevel > 95 THEN
+    Pump := FALSE;
+    OverflowAlarm := TRUE;
+END_IF;
+
+IF FlowRate < 10 THEN
+    LowFlowTimer(IN := TRUE, PT := T#5m);
+ELSE
+    LowFlowTimer(IN := FALSE);
+END_IF;
+
+IF LowFlowTimer.Q THEN
+    LowFlowAlarm := TRUE;
+END_IF;
